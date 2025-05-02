@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class GithubIssueService {
 
-  public static final String ISSUE_BASE_URL = "https://github.com/freeMates/FreeMates_Backend/issues/";
+  public static final String ISSUE_BASE_URL = "https://github.com/Cassiiopeia/suh-grass-planter/issues/";
   private static final OkHttpClient okHttpClient = new OkHttpClient();
 
   private final GithubIssueRepository githubIssueRepository;
