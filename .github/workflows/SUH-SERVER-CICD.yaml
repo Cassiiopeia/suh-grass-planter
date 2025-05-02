@@ -91,10 +91,10 @@ jobs:
             CONTAINER_NAME="suh-grass-planter-back"
             
             if [ "$BRANCH" == "main" ]; then
-              PORT=8092
+              PORT=8094
             elif [ "$BRANCH" == "test" ]; then
               CONTAINER_NAME="suh-grass-planter-back-test"
-              PORT=8093
+              PORT=8095
             fi
             
             echo "브랜치: $BRANCH"
