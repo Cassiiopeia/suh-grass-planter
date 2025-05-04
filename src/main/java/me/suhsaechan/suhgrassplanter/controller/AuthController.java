@@ -71,7 +71,7 @@ public class AuthController {
   @PostMapping("/register")
   @LogMonitor
   public ResponseEntity<AuthResponse> register(
-      @RequestBody AuthRequest request) {
+      @RequestBody AuthRequest request) throws Exception {
     AuthResponse response = authService.register(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
@@ -83,8 +83,8 @@ public class AuthController {
       @ApiChangeLog(
           date = "2025-04-17",
           author = Author.SUHSAECHAN,
-          issueNumber = 1,
-          description = "프로젝트 초기설정 이메일 중복확인 기능 추가"
+          issueNumber = 62,
+          description = "아이디 중복확인"
       )})
   @Operation(summary = "이메일 중복확인",
       description = """
