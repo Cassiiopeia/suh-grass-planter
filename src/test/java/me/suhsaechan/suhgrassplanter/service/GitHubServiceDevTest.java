@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @ActiveProfiles("dev")
 @Transactional
 @Slf4j
-class GitHubServiceTest {
+class GitHubServiceDevTest {
 
   @Autowired
   GitHubService gitHubService;
