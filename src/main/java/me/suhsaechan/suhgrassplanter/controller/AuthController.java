@@ -81,10 +81,10 @@ public class AuthController {
    * **/
   @ApiChangeLogs({
       @ApiChangeLog(
-          date = "2025-04-17",
+          date = "2025-05-04",
           author = Author.SUHSAECHAN,
-          issueNumber = 62,
-          description = "아이디 중복확인"
+          issueNumber = 1,
+          description = "이메일 중복 확인 API 추가"
       )})
   @Operation(summary = "이메일 중복확인",
       description = """
@@ -109,10 +109,10 @@ public class AuthController {
    * **/
   @ApiChangeLogs({
       @ApiChangeLog(
-          date = "2025-04-08",
+          date = "2025-05-04",
           author = Author.SUHSAECHAN,
-          issueNumber = 32,
-          description = "요청객체, 반환객체 개선, TODO: Service 로직 추가"
+          issueNumber = 1,
+          description = "로그인 API 추가"
       )
   })
   @Operation(
@@ -141,9 +141,9 @@ public class AuthController {
     return ResponseEntity.ok(authService.login(request));
   }
 
-  //아이디찾기
+  // 아이디찾기
 
-  //비밀번호 변경
+  // 비밀번호 변경
 
   // 로그아웃
 
