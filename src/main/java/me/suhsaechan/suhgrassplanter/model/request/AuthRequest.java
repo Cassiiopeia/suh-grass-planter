@@ -11,5 +11,7 @@ public class AuthRequest {
   private String nickname;
   private String password;
   private String email;
+  private String githubPat;
+  private String githubUsername;
 
 }

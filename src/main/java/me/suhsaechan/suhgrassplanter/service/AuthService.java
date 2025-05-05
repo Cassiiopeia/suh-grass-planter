@@ -1,15 +1,19 @@
 package me.suhsaechan.suhgrassplanter.service;
 
+import static org.bouncycastle.asn1.x500.style.RFC4519Style.member;
+
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.suhsaechan.suhgrassplanter.model.constants.JwtTokenType;
 import me.suhsaechan.suhgrassplanter.model.constants.Role;
 import me.suhsaechan.suhgrassplanter.model.dto.CustomUserDetails;
+import me.suhsaechan.suhgrassplanter.model.postgres.GitHubProfile;
 import me.suhsaechan.suhgrassplanter.model.postgres.Member;
 import me.suhsaechan.suhgrassplanter.model.request.AuthRequest;
 import me.suhsaechan.suhgrassplanter.model.response.AuthResponse;
 import me.suhsaechan.suhgrassplanter.repository.MemberRepository;
+import me.suhsaechan.suhgrassplanter.util.EncryptionUtil;
 import me.suhsaechan.suhgrassplanter.util.JwtUtil;
 import me.suhsaechan.suhgrassplanter.util.exception.CustomException;
 import me.suhsaechan.suhgrassplanter.util.exception.ErrorCode;
@@ -35,7 +39,7 @@ public class AuthService {
   /**
    * 회원가입
    */
-  public AuthResponse register(AuthRequest request) {
+  public AuthResponse register(AuthRequest request) throws Exception {
 
     // 중복 닉네임 검증
     if (memberRepository.existsByNickname(request.getNickname())) {
@@ -53,6 +57,14 @@ public class AuthService {
             .build());
 
     SuhLogger.superLog(savedMember);
+
+    // Github Profile 업데이트
+    GitHubProfile gihubProfile = new GitHubProfile();
+    gihubProfile.setGithubUsername(request.getGithubUsername());
+    gihubProfile.setEncryptedPat(EncryptionUtil.encrypt(request.getGithubPat()));
+    gihubProfile.setMember(savedMember);
+    savedMember.setGithubProfile(gihubProfile);
+    memberRepository.save(savedMember);
 
     return AuthResponse.builder()
         .member(savedMember)

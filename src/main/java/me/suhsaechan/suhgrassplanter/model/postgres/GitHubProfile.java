@@ -1,45 +1,39 @@
 package me.suhsaechan.suhgrassplanter.model.postgres;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.SuperBuilder;
-import me.suhsaechan.suhgrassplanter.model.constants.Role;
+import lombok.ToString;
 
 @Entity
 @Getter
 @Setter
-@SuperBuilder
-@NoArgsConstructor
+@Builder
+@ToString
 @AllArgsConstructor
-public class Member extends BasePostgresEntity {
+@NoArgsConstructor
+public class GitHubProfile extends BasePostgresEntity{
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   @Column(updatable = false, nullable = false)
-  private UUID memberId;
+  private UUID githubProfileId;
 
   @Column(nullable = false, unique = true)
-  private String email;
+  private String githubUsername;
 
   @Column(nullable = false)
-  private String password;
+  private String encryptedPat;
 
-  @Column(nullable = false, unique = true)
-  private String nickname;
-
-  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-  private GitHubProfile githubProfile;
-
-  private Role role;
+  @OneToOne(mappedBy = "githubProfile")
+  private Member member;
 }
