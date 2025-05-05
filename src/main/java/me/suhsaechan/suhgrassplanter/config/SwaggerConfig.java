@@ -14,16 +14,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @OpenAPIDefinition(
     info = @Info(
-        title = "FreeMate Server",
+        title = "SUH GRASS PLANTER",
         description = """
-            FreeMate Server API 문서
+            SUH-GRASS-PLANTER 공식 API 문서
             """,
-        version = "1.0v"
+        version = "v0.1.0"
     ),
     servers = {
         @Server(url = "http://localhost:8080", description = "로컬 서버"),
-        @Server(url = "http://3.34.78.124:8087", description = "FreeMates 서버"), //FIXME: 수정 필요
-        @Server(url = "http://suh-project.synology.me:8092", description = "SUH-PROJECT - FreeMates 서버")
+        @Server(url = "http://suh-project.synology.me:8094", description = "SUH-PROJECT - 서버")
     }
 )
 @Configuration
@@ -49,11 +48,8 @@ public class SwaggerConfig implements WebMvcConfigurer {
                     .url("http://localhost:8080")
                     .description("로컬 서버"),
                 new io.swagger.v3.oas.models.servers.Server()
-                    .url("http://3.34.78.124:8087") //FIXME: 수정 필요
-                    .description("FreeMates 서버"),
-                new io.swagger.v3.oas.models.servers.Server()
                     .url("http://suh-project.synology.me:8092")
-                    .description("SUH-PROJECT - FreeMates 서버")
+                    .description("SUH-PROJECT 서버")
             )
         );
   }
