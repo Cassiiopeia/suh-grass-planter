@@ -18,10 +18,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
-@ActiveProfiles("dev")
-@Transactional
+@ActiveProfiles("prod")
 @Slf4j
-class GitHubServiceTest {
+class GitHubServiceProdTest {
 
   @Autowired
   GitHubService gitHubService;
@@ -45,10 +44,40 @@ class GitHubServiceTest {
   public void mainTest() {
     lineLog("테스트 시작");
 
+    timeLog(this::memberCreate_테스트);
 //    timeLog(this::autoCommit_테스트);
-    timeLog(this::checkTodayCommit_테스트);
+//    timeLog(this::checkTodayCommit_테스트);
 
     lineLog("테스트 종료");
+  }
+
+  private void memberCreate_테스트() throws Exception {
+
+    /**
+     * 새찬 Member 생성
+     */
+
+    // 1. GitHubProfile 생성
+    GitHubProfile profile = GitHubProfile.builder()
+        .githubUsername(githubUsername)
+        .encryptedPat(EncryptionUtil.encrypt(githubPat))
+        .build();
+
+    // 2. Member 생성 및 GitHubProfile 연결
+    Member member = Member.builder()
+        .email(userEmail)
+        .nickname("testNickname")
+        .password("testPassword")
+        .githubProfile(profile)
+        .build();
+
+    // 3. GitHubProfile에 Member 연결
+    profile.setMember(member);
+
+    // 4. 새찬 Member 저장
+    Member savedMember = memberRepository.save(member);
+
+    superLog(savedMember);
   }
 
   private void checkTodayCommit_테스트() throws Exception {
@@ -106,5 +135,6 @@ class GitHubServiceTest {
     // autoCommit
     gitHubService.autoCommit(profile, repository);
   }
+
 
 }
