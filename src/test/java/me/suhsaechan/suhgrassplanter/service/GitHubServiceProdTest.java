@@ -60,17 +60,17 @@ class GitHubServiceProdTest {
     /**
      * 새찬 Member 생성
      */
-    // 1. Member 생성 및 GitHubProfile 연결
+    // Member 생성 및 GitHubProfile 연결
     Member member = Member.builder()
         .email(userEmail)
         .nickname("testNickname")
         .password("testPassword")
         .build();
 
-    // 2. 새찬 Member 저장
+    // 새찬 Member 저장
     Member savedMember = memberRepository.save(member);
 
-    // 3. GitHubProfile 생성
+    // GitHubProfile 생성
     GithubProfile profile = GithubProfile.builder()
         .githubUsername(githubUsername)
         .encryptedPat(EncryptionUtil.encrypt(githubPat))
