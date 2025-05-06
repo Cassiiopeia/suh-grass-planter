@@ -5,9 +5,10 @@ import static me.suhsaechan.suhlogger.util.SuhLogger.*;
 import java.util.Base64;
 import lombok.extern.slf4j.Slf4j;
 import me.suhsaechan.suhgrassplanter.model.postgres.CommitLog;
-import me.suhsaechan.suhgrassplanter.model.postgres.GitHubProfile;
+import me.suhsaechan.suhgrassplanter.model.postgres.GithubProfile;
 import me.suhsaechan.suhgrassplanter.model.postgres.Member;
 import me.suhsaechan.suhgrassplanter.repository.CommitLogRepository;
+import me.suhsaechan.suhgrassplanter.repository.GithubProfileRepository;
 import me.suhsaechan.suhgrassplanter.repository.MemberRepository;
 import me.suhsaechan.suhgrassplanter.util.EncryptionUtil;
 import me.suhsaechan.suhgrassplanter.util.exception.CustomException;
@@ -35,6 +36,9 @@ public class GitHubService {
 
   @Autowired
   private MemberRepository memberRepository;
+
+  @Autowired
+  private GithubProfileRepository githubProfileRepository;
 
   @Autowired
   private CommitLogRepository commitLogRepository;
@@ -73,7 +77,7 @@ public class GitHubService {
     }
   }
 
-  public void autoCommit(GitHubProfile profile, String repository) throws Exception {
+  public void autoCommit(GithubProfile profile, String repository) throws Exception {
     lineLog("자동 커밋 시작 - 사용자: " + profile.getGithubUsername() + ", 저장소: " + repository);
 
     log.info("PAT 복호화 진행 중...");
@@ -84,12 +88,14 @@ public class GitHubService {
     String changelogContent = "## [" + LocalDate.now().toString() + "]\n- " + commitMessage + "\n";
 
     log.info("연관된 회원 정보 조회 중...");
-    Member member = memberRepository.findByGithubProfile(profile)
-        .orElseThrow(() -> {
-          log.error("GitHub 프로필에 연결된 회원 정보 없음 - 프로필: {}", profile.getGithubUsername());
-          return new CustomException(ErrorCode.MEMBER_NOT_FOUND);
-        });
+    // 변경: profile.getMember()로 직접 접근
+    Member member = profile.getMember();
+    if (member == null) {
+      log.error("GitHub 프로필에 연결된 회원 정보 없음 - 프로필: {}", profile.getGithubUsername());
+      throw new CustomException(ErrorCode.MEMBER_NOT_FOUND);
+    }
     log.info("연관된 회원 정보 조회 완료 - 회원: {}", member.getNickname());
+
 
     // GitHub API 클라이언트 설정
     log.info("GitHub API 클라이언트 설정 중...");
@@ -200,19 +206,20 @@ public class GitHubService {
   @Transactional
   public void checkContributions() {
     lineLog("일일 GitHub 기여도 확인 및 자동 커밋 시작");
-    log.info("모든 회원의 GitHub 기여도 확인 작업 시작 - 현재 시간: {}", LocalDateTime.now());
+    log.info("모든 GitHub 프로필 조회 작업 시작 - 현재 시간: {}", LocalDateTime.now());
 
-    List<Member> members = memberRepository.findAll();
-    log.info("총 회원 수: {}", members.size());
+    // 변경: 이제 GitHubProfile을 기준으로 조회
+    List<GithubProfile> profiles = githubProfileRepository.findAllWithMember();
+    log.info("총 GitHub 프로필 수: {}", profiles.size());
 
     int processedCount = 0;
     int commitCount = 0;
 
-    for (Member member : members) {
-      GitHubProfile profile = member.getGithubProfile();
-      if (profile != null) {
-        log.info("회원 처리 중 [{}/{}] - 회원: {}, GitHub: {}",
-            ++processedCount, members.size(), member.getNickname(), profile.getGithubUsername());
+    for (GithubProfile profile : profiles) {
+      Member member = profile.getMember();
+      if (member != null) {
+        log.info("GitHub 프로필 처리 중 [{}/{}] - 회원: {}, GitHub: {}",
+            ++processedCount, profiles.size(), member.getNickname(), profile.getGithubUsername());
 
         try {
           int level = checkContributionLevel(profile.getGithubUsername(), LocalDate.now());
@@ -225,15 +232,15 @@ public class GitHubService {
             log.info("오늘 이미 커밋 있음 (레벨: {}) - 자동 커밋 생략 - 사용자: {}", level, profile.getGithubUsername());
           }
         } catch (Exception e) {
-          log.error("회원 처리 중 오류 발생 - 회원: {}, GitHub: {}, 오류: {}",
+          log.error("GitHub 프로필 처리 중 오류 발생 - 회원: {}, GitHub: {}, 오류: {}",
               member.getNickname(), profile.getGithubUsername(), e.getMessage(), e);
         }
       } else {
-        log.warn("GitHub 프로필 정보 없음 - 회원: {}", member.getNickname());
+        log.warn("GitHub 프로필에 연결된 회원 정보 없음 - 프로필: {}", profile.getGithubUsername());
       }
     }
 
-    log.info("일일 GitHub 기여도 확인 완료 - 처리된 회원: {}, 자동 커밋: {}", processedCount, commitCount);
+    log.info("일일 GitHub 기여도 확인 완료 - 처리된 프로필: {}, 자동 커밋: {}", processedCount, commitCount);
     lineLog("일일 GitHub 기여도 확인 및 자동 커밋 완료");
   }
 }

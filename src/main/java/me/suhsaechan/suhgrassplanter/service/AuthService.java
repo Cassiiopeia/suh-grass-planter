@@ -1,17 +1,15 @@
 package me.suhsaechan.suhgrassplanter.service;
 
-import static org.bouncycastle.asn1.x500.style.RFC4519Style.member;
-
-import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.suhsaechan.suhgrassplanter.model.constants.JwtTokenType;
 import me.suhsaechan.suhgrassplanter.model.constants.Role;
 import me.suhsaechan.suhgrassplanter.model.dto.CustomUserDetails;
-import me.suhsaechan.suhgrassplanter.model.postgres.GitHubProfile;
+import me.suhsaechan.suhgrassplanter.model.postgres.GithubProfile;
 import me.suhsaechan.suhgrassplanter.model.postgres.Member;
 import me.suhsaechan.suhgrassplanter.model.request.AuthRequest;
 import me.suhsaechan.suhgrassplanter.model.response.AuthResponse;
+import me.suhsaechan.suhgrassplanter.repository.GithubProfileRepository;
 import me.suhsaechan.suhgrassplanter.repository.MemberRepository;
 import me.suhsaechan.suhgrassplanter.util.EncryptionUtil;
 import me.suhsaechan.suhgrassplanter.util.JwtUtil;
@@ -31,6 +29,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
   private final MemberRepository memberRepository;
+  private final GithubProfileRepository githubProfileRepository;
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
   private final AuthenticationManager authenticationManager;
   private final JwtUtil jwtUtil;
@@ -58,13 +57,16 @@ public class AuthService {
 
     SuhLogger.superLog(savedMember);
 
-    // Github Profile 업데이트
-    GitHubProfile gihubProfile = new GitHubProfile();
-    gihubProfile.setGithubUsername(request.getGithubUsername());
-    gihubProfile.setEncryptedPat(EncryptionUtil.encrypt(request.getGithubPat()));
-    gihubProfile.setMember(savedMember);
-    savedMember.setGithubProfile(gihubProfile);
-    memberRepository.save(savedMember);
+    // Github Profile 저장
+    GithubProfile githubProfile = GithubProfile.builder()
+        .githubUsername(request.getGithubUsername())
+        .encryptedPat(EncryptionUtil.encrypt(request.getGithubPat()))
+        .member(savedMember)
+        .build();
+
+    githubProfileRepository.save(githubProfile);
+
+    SuhLogger.superLog(savedMember);
 
     return AuthResponse.builder()
         .member(savedMember)

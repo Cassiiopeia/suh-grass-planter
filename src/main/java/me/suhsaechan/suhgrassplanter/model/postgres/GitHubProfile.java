@@ -21,7 +21,7 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class GitHubProfile extends BasePostgresEntity{
+public class GithubProfile extends BasePostgresEntity{
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -34,6 +34,6 @@ public class GitHubProfile extends BasePostgresEntity{
   @Column(nullable = false)
   private String encryptedPat;
 
-  @OneToOne(mappedBy = "githubProfile")
+  @OneToOne
   private Member member;
 }

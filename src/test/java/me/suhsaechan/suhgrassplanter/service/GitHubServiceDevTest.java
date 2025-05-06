@@ -6,8 +6,10 @@ import static me.suhsaechan.suhlogger.util.SuhLogger.timeLog;
 
 import java.time.LocalDate;
 import lombok.extern.slf4j.Slf4j;
-import me.suhsaechan.suhgrassplanter.model.postgres.GitHubProfile;
+import me.suhsaechan.suhgrassplanter.model.constants.Role;
+import me.suhsaechan.suhgrassplanter.model.postgres.GithubProfile;
 import me.suhsaechan.suhgrassplanter.model.postgres.Member;
+import me.suhsaechan.suhgrassplanter.repository.GithubProfileRepository;
 import me.suhsaechan.suhgrassplanter.repository.MemberRepository;
 import me.suhsaechan.suhgrassplanter.util.EncryptionUtil;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,9 @@ class GitHubServiceDevTest {
 
   @Autowired
   MemberRepository memberRepository;
+
+  @Autowired
+  GithubProfileRepository githubProfileRepository;
 
   @Value("${test.github.suhsaechan.username}")
   private String githubUsername;
@@ -52,59 +57,59 @@ class GitHubServiceDevTest {
   }
 
   private void checkTodayCommit_테스트() throws Exception {
-    // GitHubProfile 생성
-    GitHubProfile profile = GitHubProfile.builder()
-        .githubUsername(githubUsername)
-        .encryptedPat(EncryptionUtil.encrypt(githubPat))
-        .build();
-
-    // Member 생성 및 GitHubProfile 연결
+    // Member 생성
     Member member = Member.builder()
         .email(userEmail)
         .nickname("testNickname")
         .password("testPassword")
-        .githubProfile(profile)
+        .role(Role.ROLE_USER)
         .build();
 
-    // GitHubProfile에 Member 연결
-    profile.setMember(member);
-
-    // Member 저장
     Member savedMember = memberRepository.save(member);
 
+    // GithubProfile 생성 및 Member 연결
+    GithubProfile profile = GithubProfile.builder()
+        .githubUsername(githubUsername)
+        .encryptedPat(EncryptionUtil.encrypt(githubPat))
+        .member(savedMember)
+        .build();
+
+    // GithubProfile 저장
+    GithubProfile savedProfile = githubProfileRepository.save(profile);
+
     int contributionLevel = gitHubService.checkContributionLevel(
-        savedMember.getGithubProfile().getGithubUsername(),
+        profile.getGithubUsername(),
         LocalDate.now());
 
     superLog(contributionLevel);
   }
 
   public void autoCommit_테스트() throws Exception {
-    // GitHubProfile 생성
-    GitHubProfile profile = GitHubProfile.builder()
-        .githubUsername(githubUsername)
-        .encryptedPat(EncryptionUtil.encrypt(githubPat))
-        .build();
-
-    // Member 생성 및 GitHubProfile 연결
+    // Member 먼저 생성
     Member member = Member.builder()
         .email(userEmail)
         .nickname("testNickname")
         .password("testPassword")
-        .githubProfile(profile)
+        .role(Role.ROLE_USER)
         .build();
 
-    // GitHubProfile에 Member 연결
-    profile.setMember(member);
+    Member savedMember = memberRepository.save(member);
 
-    // Member 저장
-    memberRepository.save(member);
+    // GithubProfile 생성 및 Member 연결
+    GithubProfile profile = GithubProfile.builder()
+        .githubUsername(githubUsername)
+        .encryptedPat(EncryptionUtil.encrypt(githubPat))
+        .member(savedMember)
+        .build();
+
+    // GithubProfile 저장
+    GithubProfile savedProfile = githubProfileRepository.save(profile);
 
     // 테스트 레포지토리 이름
     String repository = githubRepository;
 
     // autoCommit
-    gitHubService.autoCommit(profile, repository);
+    gitHubService.autoCommit(savedProfile, repository);
   }
 
 }

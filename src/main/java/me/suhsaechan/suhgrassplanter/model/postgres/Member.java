@@ -38,8 +38,5 @@ public class Member extends BasePostgresEntity {
   @Column(nullable = false, unique = true)
   private String nickname;
 
-  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-  private GitHubProfile githubProfile;
-
   private Role role;
 }
